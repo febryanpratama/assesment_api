@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,8 +44,27 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+        $this->renderable(function (MethodNotAllowedHttpException $e) {
+                // do something
+                return response()->json([
+                    'statusCode' => 405,
+                    'message' => 'Resource not Allowed',
+                    'data' => null
+                ]);
+            });
+    }
+    public function render($request, Throwable $e)
+    {
+         if ($e instanceof MethodNotAllowedHttpException) {
+        if ($request->ajax()) {
+            return response()->json(['error' => 'Route Not Found'], 404);
+        }
+        else {
+            //something else
+        }
+    }
+
+    return parent::render($request, $e);
     }
 }
+
